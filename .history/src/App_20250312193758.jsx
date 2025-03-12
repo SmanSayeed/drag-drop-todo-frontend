@@ -6,8 +6,6 @@ import { Route, Routes } from 'react-router'
 import Home from './components/pages/Home/Home'
 import NoMatch from './components/pages/NoMatch/NoMatch'
 import Login from './components/pages/Login/Login'
-import Register from './components/pages/Register/Register'
-import Tasks from './components/pages/Tasks/Tasks'
 
 function App() {
  
@@ -17,8 +15,7 @@ function App() {
          <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/register" element={<Login />} />
             <Route path="*" element={<NoMatch />} />
          </Routes>
       
