@@ -3,8 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaTasks, FaClipboardList, FaCheck, FaSignInAlt, FaUserPlus, FaArrowRight } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../context/AuthContext';
-import Button from '../../components/ui/Button/Button';
+import { useAuth } from '../../../context/AuthContext';
+import Button from '../../ui/Button/Button';
 
 const Home = () => {
   const { isAuthenticated, user } = useAuth();

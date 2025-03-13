@@ -4,22 +4,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaUserPlus } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
-import { clearAuthError } from '../../store/slices/authSlice';
-import { useRegisterMutation } from '../../store/services/authApi';
-import { useToast } from '../../context/ToastContext';
-import Input from '../../components/ui/Input/Input';
-import Button from '../../components/ui/Button/Button';
+import { clearAuthError, selectIsAuthenticated, selectAuthError } from '../../../store/slices/authSlice';
+import { useRegisterMutation } from '../../../store/services/authApi';
+import { useToast } from '../../../context/ToastContext';
+import useApiError from '../../../hooks/useApiError';
+import Input from '../../ui/Input/Input';
+import Button from '../../ui/Button/Button';
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const toast = useToast();
   
-  // Get auth state from Redux
-  const { isAuthenticated, error } = useSelector(state => state.auth);
+  // Get auth state from Redux using selectors
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const authError = useSelector(selectAuthError);
   
   // RTK Query register mutation
-  const [register, { isLoading }] = useRegisterMutation();
+  const [register, { isLoading, error: registerError }] = useRegisterMutation();
   
   // Form state
   const [formData, setFormData] = useState({
@@ -30,6 +32,14 @@ const Register = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   
+  // Use API error hook to handle registration errors
+  useApiError({
+    error: registerError,
+    setFormErrors,
+    showToast: false, // We'll handle auth errors separately
+    defaultMessage: 'Registration failed. Please try again later.'
+  });
+  
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -37,13 +47,13 @@ const Register = () => {
     }
   }, [isAuthenticated, navigate]);
   
-  // Show auth error
+  // Handle auth errors from Redux state
   useEffect(() => {
-    if (error) {
-      toast.error(error);
+    if (authError) {
+      toast.error(authError);
       dispatch(clearAuthError());
     }
-  }, [error, toast, dispatch]);
+  }, [authError, toast, dispatch]);
   
   // Handle input change
   const handleChange = (e) => {
@@ -95,15 +105,10 @@ const Register = () => {
     try {
       await register(formData).unwrap();
       toast.success('Registration successful! Redirecting to tasks...');
-      // Navigation will happen automatically in the useEffect
+      // Navigation will happen automatically in the useEffect when isAuthenticated updates
     } catch (error) {
+      // Most error handling is now done by useApiError hook
       console.error('Registration error:', error);
-      
-      // Show field-specific validation errors if available
-      const validationErrors = error.data?.errors;
-      if (validationErrors) {
-        setFormErrors(validationErrors);
-      }
     }
   };
   

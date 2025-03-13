@@ -4,11 +4,12 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaLock, FaSignInAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
-import { clearAuthError } from '../../store/slices/authSlice';
-import { useLoginMutation } from '../../store/services/authApi';
-import { useToast } from '../../context/ToastContext';
-import Input from '../../components/ui/Input/Input';
-import Button from '../../components/ui/Button/Button';
+import { clearAuthError, selectIsAuthenticated, selectAuthError } from '../../../store/slices/authSlice';
+import { useLoginMutation } from '../../../store/services/authApi';
+import { useToast } from '../../../context/ToastContext';
+import useApiError from '../../../hooks/useApiError';
+import Input from '../../ui/Input/Input';
+import Button from '../../ui/Button/Button';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,11 +17,12 @@ const Login = () => {
   const dispatch = useDispatch();
   const toast = useToast();
   
-  // Get auth state from Redux
-  const { isAuthenticated, error } = useSelector(state => state.auth);
+  // Get auth state from Redux using selectors
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const authError = useSelector(selectAuthError);
   
   // RTK Query login mutation
-  const [login, { isLoading }] = useLoginMutation();
+  const [login, { isLoading, error: loginError }] = useLoginMutation();
   
   // Form state
   const [formData, setFormData] = useState({
@@ -28,6 +30,14 @@ const Login = () => {
     password: '',
   });
   const [formErrors, setFormErrors] = useState({});
+  
+  // Use API error hook to handle login errors
+  useApiError({
+    error: loginError,
+    setFormErrors,
+    showToast: false, // We'll handle auth errors separately
+    defaultMessage: 'Login failed. Please check your credentials and try again.'
+  });
   
   // Redirect if already authenticated
   useEffect(() => {
@@ -37,13 +47,13 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate, location]);
   
-  // Show auth error
+  // Handle auth errors from Redux state
   useEffect(() => {
-    if (error) {
-      toast.error(error);
+    if (authError) {
+      toast.error(authError);
       dispatch(clearAuthError());
     }
-  }, [error, toast, dispatch]);
+  }, [authError, toast, dispatch]);
   
   // Handle input change
   const handleChange = (e) => {
@@ -85,15 +95,10 @@ const Login = () => {
     try {
       await login(formData).unwrap();
       toast.success('Login successful! Redirecting...');
-      // Redirect will happen in the useEffect
+      // Redirect will happen in the useEffect when isAuthenticated updates
     } catch (error) {
+      // Most error handling is now done by useApiError hook
       console.error('Login error:', error);
-      
-      // Show field-specific validation errors if available
-      const validationErrors = error.data?.errors;
-      if (validationErrors) {
-        setFormErrors(validationErrors);
-      }
     }
   };
   

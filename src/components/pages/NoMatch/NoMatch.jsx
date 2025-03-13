@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaExclamationTriangle, FaHome } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import Button from '../../components/ui/Button/Button';
+import Button from '../../ui/Button/Button';
 
 const NoMatch = () => {
   return (
