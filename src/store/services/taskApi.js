@@ -1,27 +1,11 @@
 // src/store/services/taskApi.js
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import config from '../../config/apiConfig';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import baseQuery from './baseQuery';
 import { formatDateForApi } from '../../utils/dateUtils';
 
 export const taskApi = createApi({
   reducerPath: 'taskApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: config.API_BASE_URL,
-    prepareHeaders: (headers) => {
-      // Get token from localStorage
-      const token = localStorage.getItem(config.AUTH_TOKEN_KEY);
-      
-      // Add authorization header if token exists
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      
-      headers.set('Content-Type', 'application/json');
-      headers.set('Accept', 'application/json');
-      
-      return headers;
-    },
-  }),
+  baseQuery,
   tagTypes: ['Tasks', 'Task'],
   endpoints: (builder) => ({
     // Get all tasks with optional filters

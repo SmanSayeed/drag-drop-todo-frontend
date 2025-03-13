@@ -1,26 +1,11 @@
 // src/store/services/authApi.js
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import baseQuery from './baseQuery';
 import config from '../../config/apiConfig';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: config.API_BASE_URL,
-    prepareHeaders: (headers) => {
-      // Get token from localStorage for authenticated requests
-      const token = localStorage.getItem(config.AUTH_TOKEN_KEY);
-      
-      // Add authorization header if token exists
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      
-      headers.set('Content-Type', 'application/json');
-      headers.set('Accept', 'application/json');
-      
-      return headers;
-    },
-  }),
+  baseQuery,
   endpoints: (builder) => ({
     // Register a new user
     register: builder.mutation({
